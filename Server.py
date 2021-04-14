@@ -3,6 +3,7 @@ from gemeaux import App, Handler
 from BBC import BBCHandler
 from Spectator import SpectatorHandler
 from Telegraph import TelegraphHandler
+from Times import TimesHandler
 
 from TemplateStrResponse import TemplateStrResponse
 
@@ -30,7 +31,8 @@ class Server:
             "/spectator": SpectatorHandler(),
             "/telegraph": TelegraphHandler(),
             "/bbc": BBCHandler(),
-            "/": HomeHandler()
+            "/times": TimesHandler(),
+            "": HomeHandler()
         }
 
         app = App(urls)

@@ -84,7 +84,7 @@ class SpectatorHandler(Handler):
 
         for a in articles:
             out += "=> {} {}\n\n".format(
-                a.url.replace(self.spectator.BASE, "gemini://{}/spectator".format(config.IP)),
+                a.url.replace(self.spectator.BASE, "/spectator"),
                 a.title
             )
 

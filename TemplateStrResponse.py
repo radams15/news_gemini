@@ -9,7 +9,8 @@ class TemplateStrResponse(responses.Response):
 
     def __body__(self):
         try:
-            body = self.template.substitute(self.context)
-            return bytes(body, encoding="utf-8")
+            #body = self.template.substitute(self.context)
+            body = self.template
+            return bytes(body.template, encoding="utf-8")
         except KeyError as exc:
             raise TemplateError(exc.args[0])

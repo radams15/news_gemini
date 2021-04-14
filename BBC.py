@@ -80,7 +80,7 @@ class BBCHandler(Handler):
 
         for a in articles:
             out += "=> {} {}\n\n".format(
-                a.url.replace(self.bbc.BASE, "gemini://{}/bbc".format(config.IP)),
+                a.url.replace(self.bbc.BASE, "/bbc"),
                 a.title
             )
 

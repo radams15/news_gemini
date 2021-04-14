@@ -9,8 +9,8 @@ import config
 from TemplateStrResponse import TemplateStrResponse
 
 
-class Telegraph:
-    BASE = "https://www.telegraph.co.uk"
+class Times:
+    BASE = "https://www.thetimes.co.uk"
 
     def __init__(self):
         pass
@@ -20,12 +20,12 @@ class Telegraph:
 
         if data.status_code != 200:
             return None
-
+            
         content = data.content.decode()
 
         soup = BeautifulSoup(content, features="lxml")
-
-        headlines = soup.find_all("h3", {"class":"list-headline"})
+        
+        headlines = soup.find_all("div", {"class":"Item-content"})
 
         article_urls = set()
 
@@ -33,15 +33,20 @@ class Telegraph:
             titles = list(hl.strings)
 
             title = "Unknown"
-
-            for t in titles:
-                if t.strip(): title = t.strip()
-
+            
+            title = " | ".join(titles)
+            title = title.replace(" | Read the full story", "")
+            title = title.title()
+            
+            if "play now" in title.lower():
+            	continue
+            
             try:
-                href = hl.find("a", {"class": "list-headline__link"}).attrs["href"]
+                href = hl.find("a", {"class": "js-tracking"}).attrs["href"]
 
                 if not self.BASE in href:
                     href = self.BASE + href
+
             except:
                 continue
 
@@ -52,7 +57,11 @@ class Telegraph:
         return articles
 
     def get_article(self, url):
-        data = requests.get(url)
+        data = requests.get(url, headers={
+            "User-Agent": "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)",
+            "X-Forwarded-For": "66.249.66.1",
+            "Cookie": ""
+        })
 
         if data.status_code != 200:
             return None
@@ -61,17 +70,12 @@ class Telegraph:
 
         soup = BeautifulSoup(content, features="lxml")
 
-        author = soup.find("span", {"class": "e-byline__author"}).text.strip()
-        title = soup.find("h1", {"class": "e-headline"}).text.strip()
+        main = soup.find("main", {"role": "main"})
+        strings = list(main.strings)
 
-        bodies = soup.find_all("div", {"class": "article-body-text"})
-        paragraphs = reduce(lambda z, y :z + y, [x.find_all("p") for x in bodies])
+        print(strings)
 
-        body = "\n\n".join(x.text for x in paragraphs)
-
-        return Article("The Telegraph", url, author, title, body)
-
-class TelegraphHandler(Handler):
+class TimesHandler(Handler):
     def __init__(self, *args):
         Handler.__init__(self, *args)
 
@@ -84,20 +88,20 @@ class TelegraphHandler(Handler):
             return self.article(path)
 
     def home(self):
-        out = "# All Telegraph Articles:\n\n"
+        out = "# All Times Articles:\n\n"
 
         articles = self.telegraph.get_articles()
 
         for a in articles:
             out += "=> {} {}\n\n".format(
-                a.url.replace(self.telegraph.BASE, "/telegraph"),
+                a.url.replace(self.telegraph.BASE, "/times"),
                 a.title
             )
 
         return TemplateStrResponse(out)
 
     def article(self, base_url):
-        url = base_url.replace("/telegraph", "", 1)
+        url = base_url.replace("/times", "", 1)
 
         article = self.telegraph.get_article(self.telegraph.BASE+url)
         return TemplateStrResponse(f"""\
